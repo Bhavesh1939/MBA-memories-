@@ -58,11 +58,6 @@ button {
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.3s;
-}
-
-button:hover {
-  background: #6c8cff;
 }
 
 #cards {
@@ -96,18 +91,6 @@ button:hover {
   height: 400px;
   margin-top: 30px;
 }
-
-.carousel {
-  display: flex;
-  overflow-x: auto;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.carousel img {
-  height: 200px;
-  border-radius: 10px;
-}
 </style>
 </head>
 
@@ -117,18 +100,29 @@ button:hover {
 
 <div class="section">
   <h2>Leave a Memory 💙</h2>
-  <form id="testimonialForm">
-    <input type="text" id="name" placeholder="Your Name" required>
-    <textarea id="testimonial" placeholder="Your words about me" required></textarea>
-    <input type="text" id="traits" placeholder="Traits (comma separated)" required>
-    <select id="relationship">
+
+  <!-- FORM SUBMITS DIRECTLY TO APPS SCRIPT -->
+  <form id="testimonialForm"
+        action="PASTE_YOUR_EXEC_URL_HERE"
+        method="POST"
+        target="hiddenFrame">
+
+    <input type="text" name="name" placeholder="Your Name" required>
+    <textarea name="testimonial" placeholder="Your words about me" required></textarea>
+    <input type="text" name="traits" placeholder="Traits (comma separated)" required>
+
+    <select name="relationship">
       <option>Inner Circle</option>
       <option>Close Friend</option>
       <option>MBA Friend</option>
       <option>Classmate</option>
     </select>
+
     <button type="submit">Submit</button>
   </form>
+
+  <!-- Hidden iframe prevents page redirect -->
+  <iframe name="hiddenFrame" style="display:none;"></iframe>
 </div>
 
 <div class="section">
@@ -141,52 +135,17 @@ button:hover {
   <canvas id="wordcloud"></canvas>
 </div>
 
-<div class="section">
-  <h2>Memories</h2>
-  <div class="carousel">
-    <img src="https://picsum.photos/400/300?1">
-    <img src="https://picsum.photos/400/300?2">
-    <img src="https://picsum.photos/400/300?3">
-  </div>
-</div>
-
 <script>
-const API = "PASTE_YOUR_WEB_APP_EXEC_URL_HERE"; // must end with /exec
+const API = "https://script.google.com/macros/s/AKfycbzdH52h8IhO-kUnzopJgaihEWNVP2SlJ783vTnyPeaC9JrEaGsiHhAVsNOvYx_JVSdZ/exec";
 
-document.addEventListener("DOMContentLoaded", () => {
+const form = document.getElementById("testimonialForm");
 
-  const form = document.getElementById("testimonialForm");
-  const nameInput = document.getElementById("name");
-  const testimonialInput = document.getElementById("testimonial");
-  const traitsInput = document.getElementById("traits");
-  const relationshipInput = document.getElementById("relationship");
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("name", nameInput.value);
-    formData.append("testimonial", testimonialInput.value);
-    formData.append("traits", traitsInput.value);
-    formData.append("relationship", relationshipInput.value);
-
-    try {
-      await fetch(API, {
-        method: "POST",
-        body: formData
-      });
-
-      alert("Memory submitted successfully 💙");
-      form.reset();
-      loadData();
-
-    } catch (err) {
-      console.error("Submission error:", err);
-      alert("Submission failed.");
-    }
-  });
-
-  loadData();
+form.addEventListener("submit", () => {
+  setTimeout(() => {
+    alert("Memory submitted successfully 💙");
+    form.reset();
+    loadData();
+  }, 1000);
 });
 
 async function loadData(){
@@ -211,10 +170,6 @@ async function loadData(){
       if(person.Relationship==="Classmate") div.classList.add("classmate");
 
       div.textContent = person.Name;
-      div.onclick = () => {
-        window.location = "person.html?name=" + encodeURIComponent(person.Name);
-      };
-
       cards.appendChild(div);
 
       if(person.Traits){
@@ -237,6 +192,8 @@ async function loadData(){
     console.error("Load error:", err);
   }
 }
+
+loadData();
 </script>
 
 </body>
