@@ -129,68 +129,95 @@ button {
 <script>
 const API = "https://script.google.com/macros/s/AKfycbzdH52h8IhO-kUnzopJgaihEWNVP2SlJ783vTnyPeaC9JrEaGsiHhAVsNOvYx_JVSdZ/exec";
 
-if(localStorage.getItem("submitted")){
-  document.getElementById("popup").style.display="none";
-}
+document.addEventListener("DOMContentLoaded", () => {
 
-document.getElementById("testimonialForm").addEventListener("submit", async e=>{
-  e.preventDefault();
-  const data = {
-    name: name.value,
-    testimonial: testimonial.value,
-    traits: traits.value,
-    relationship: relationship.value
-  };
+  const popup = document.getElementById("popup");
+  const form = document.getElementById("testimonialForm");
 
-  await fetch(API,{
-    method:"POST",
-    body: JSON.stringify(data)
-  });
+  const nameInput = document.getElementById("name");
+  const testimonialInput = document.getElementById("testimonial");
+  const traitsInput = document.getElementById("traits");
+  const relationshipInput = document.getElementById("relationship");
 
-  localStorage.setItem("submitted",true);
-  location.reload();
-});
+  // Show popup only if not submitted before
+  if (localStorage.getItem("submitted")) {
+    popup.style.display = "none";
+  }
 
-async function loadData(){
-  const res = await fetch(API);
-  const data = await res.json();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  data.sort((a,b)=>a.Name.localeCompare(b.Name));
+    const data = {
+      name: nameInput.value,
+      testimonial: testimonialInput.value,
+      traits: traitsInput.value,
+      relationship: relationshipInput.value
+    };
 
-  const cards = document.getElementById("cards");
-  const traitsFreq = {};
-
-  data.forEach(person=>{
-    const div = document.createElement("div");
-    div.className="card";
-
-    if(person.Relationship==="Inner Circle") div.classList.add("inner");
-    if(person.Relationship==="Close Friend") div.classList.add("close");
-    if(person.Relationship==="MBA Friend") div.classList.add("mba");
-    if(person.Relationship==="Classmate") div.classList.add("classmate");
-
-    div.textContent=person.Name;
-    div.onclick=()=> window.location="person.html?name="+encodeURIComponent(person.Name);
-    cards.appendChild(div);
-
-    if(person.Traits){
-      person.Traits.split(",").forEach(t=>{
-        t=t.trim();
-        traitsFreq[t]=(traitsFreq[t]||0)+1;
+    try {
+      await fetch(API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
       });
+
+      localStorage.setItem("submitted", "true");
+      popup.style.display = "none";
+
+    } catch (err) {
+      alert("Submission failed. Check backend deployment.");
+      console.error(err);
     }
   });
 
-  WordCloud(document.getElementById('wordcloud'), {
-    list: Object.entries(traitsFreq),
-    gridSize: 8,
-    weightFactor: 10,
-    backgroundColor: '#0f0f1a',
-    color: 'random-light'
-  });
-}
+  loadData();
+});
 
-loadData();
+async function loadData(){
+  try {
+    const res = await fetch(API);
+    const data = await res.json();
+
+    data.sort((a,b)=>a.Name.localeCompare(b.Name));
+
+    const cards = document.getElementById("cards");
+    const traitsFreq = {};
+
+    data.forEach(person=>{
+      const div = document.createElement("div");
+      div.className="card";
+
+      if(person.Relationship==="Inner Circle") div.classList.add("inner");
+      if(person.Relationship==="Close Friend") div.classList.add("close");
+      if(person.Relationship==="MBA Friend") div.classList.add("mba");
+      if(person.Relationship==="Classmate") div.classList.add("classmate");
+
+      div.textContent=person.Name;
+      div.onclick=()=> window.location="person.html?name="+encodeURIComponent(person.Name);
+      cards.appendChild(div);
+
+      if(person.Traits){
+        person.Traits.split(",").forEach(t=>{
+          t=t.trim();
+          traitsFreq[t]=(traitsFreq[t]||0)+1;
+        });
+      }
+    });
+
+    WordCloud(document.getElementById('wordcloud'), {
+      list: Object.entries(traitsFreq),
+      gridSize: 8,
+      weightFactor: 10,
+      backgroundColor: '#0f0f1a',
+      color: 'random-light'
+    });
+
+  } catch (err) {
+    console.error("Data loading failed:", err);
+  }
+}
 </script>
 
 </body>
