@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Memory Profile</title>
+<style>
+body {
+  background:#0f0f1a;
+  color:white;
+  font-family:Segoe UI;
+  padding:40px;
+}
+
+h1 { font-size:3em; }
+.section { margin-bottom:30px; }
+
+.gallery img {
+  height:200px;
+  margin:10px;
+  border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<div id="content"></div>
+
+<script>
+const API = "YOUR_WEB_APP_URL";
+
+const params = new URLSearchParams(window.location.search);
+const name = params.get("name");
+
+async function load(){
+  const res = await fetch(API);
+  const data = await res.json();
+
+  const person = data.find(p=>p.Name===name);
+  if(!person) return;
+
+  const div = document.getElementById("content");
+
+  div.innerHTML=`
+    <h1>${person.Name}</h1>
+
+    <div class="section">
+      <h2>Their Words</h2>
+      <p>${person.Testimonial}</p>
+    </div>
+
+    <div class="section">
+      <h2>Traits</h2>
+      <p>${person.Traits}</p>
+    </div>
+
+    <div class="section">
+      <h2>My Poem</h2>
+      <p>${person.Poem || "Coming soon..."}</p>
+    </div>
+
+    <div class="section gallery">
+      <h2>Our Memories</h2>
+      ${(person.Photos || "").split(",").map(p=>`<img src="${p.trim()}">`).join("")}
+    </div>
+  `;
+}
+
+load();
+</script>
+
+</body>
+</html>
